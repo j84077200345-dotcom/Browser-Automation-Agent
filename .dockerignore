@@ -1,0 +1,17 @@
+# 不要把這些內容放進 Docker build context / image。
+browser_auto_env/
+.venv/
+venv/
+.git/
+.gitignore
+.gitattributes
+__pycache__/
+*.pyc
+.env
+.env.local
+app/runs/
+tests/
+*.md
+.claude/
+.idea/
+.vscode/

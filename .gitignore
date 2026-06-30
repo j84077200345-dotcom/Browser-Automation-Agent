@@ -26,6 +26,9 @@ app/runs/*
 /playwright-report/
 /test-results/
 
+# --- Claude Code 本地設定(保留 skills/,排除個人權限設定) ---
+.claude/settings.local.json
+
 # --- 作業系統 / 編輯器 ---
 .DS_Store
 Thumbs.db
