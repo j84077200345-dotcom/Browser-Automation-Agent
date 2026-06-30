@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+<div class="panel">
+  <div class="small muted">
+    {% if status.has_api_key %}
+      伺服器狀態:
+      {% if status.busy %}<span class="badge running">執行中</span>(run {{ status.current_run_id }}){% else %}<span class="badge succeeded">閒置</span>{% endif %}
+      {% if status.daily_limit > 0 %}· 今日已用 {{ status.daily_used }}/{{ status.daily_limit }} 次{% endif %}
+    {% else %}
+      <span class="badge failed">未設定 API key</span> 伺服器尚未設定 ANTHROPIC_API_KEY,無法觸發新的 run(仍可瀏覽既有結果)。
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">啟動一個新的 run</h3>
+  <p class="muted small">輸入自然語言目標與起始 URL,或點選下方預設任務一鍵帶入。僅支援免登入的公開頁面。</p>
+
+  <div class="row" style="margin-bottom:8px">
+    {% for p in presets %}
+      <button type="button" class="preset"
+        onclick="fillPreset({{ p.goal | tojson }}, {{ p.start_url | tojson }})">{{ p.title }}</button>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="/run">
+    <label for="goal">目標(Goal)</label>
+    <textarea id="goal" name="goal" placeholder="例如:在 Hacker News 找出頭條新聞並摘要其留言討論" required></textarea>
+    <label for="start_url">起始 URL</label>
+    <input type="text" id="start_url" name="start_url" placeholder="https://news.ycombinator.com" required>
+    <div style="margin-top:14px">
+      <button type="submit" {% if not status.has_api_key %}disabled{% endif %}>▶ 開始執行</button>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">歷史 run</h3>
+  {% if runs %}
+  <table>
+    <thead><tr><th>時間 (UTC)</th><th>狀態</th><th>步數</th><th>目標</th></tr></thead>
+    <tbody>
+      {% for r in runs %}
+      <tr>
+        <td class="small"><a href="/runs/{{ r.run_id }}">{{ r.started_at[:19] if r.started_at else r.run_id }}</a></td>
+        <td><span class="badge {{ r.status }}">{{ r.status }}</span></td>
+        <td>{{ r.steps }}</td>
+        <td class="small">{{ r.goal[:90] }}{% if r.goal and r.goal|length > 90 %}…{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">目前尚無任何 run。</p>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 點選預設任務時,將目標與起始 URL 帶入表單欄位。
+  function fillPreset(goal, url) {
+    document.getElementById('goal').value = goal;
+    document.getElementById('start_url').value = url;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Run {{ run_id }} · Browser Automation Agent{% endblock %}
+{% block content %}
+
+<p class="small"><a href="/">← 回到儀表板</a></p>
+
+<div class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <h3 style="margin:0">Run <span class="muted small">{{ run_id }}</span></h3>
+    <span id="status-badge" class="badge running">…</span>
+  </div>
+  <p id="goal" style="margin:10px 0 4px"></p>
+  <p class="muted small" id="meta"></p>
+  <div class="toolbar small">
+    <a href="/artifacts/{{ run_id }}/report.md" target="_blank">report.md</a>
+    <a href="/artifacts/{{ run_id }}/data.json" target="_blank">data.json</a>
+    <a href="/api/runs/{{ run_id }}" target="_blank">run.json</a>
+  </div>
+</div>
+
+<div id="report-panel" class="panel" style="display:none">
+  <h3 style="margin-top:0">最終報告</h3>
+  <div id="report" class="report"></div>
+</div>
+
+<div class="panel">
+  <h3 style="margin-top:0">執行步驟 <span class="muted small" id="step-count"></span></h3>
+  <div id="steps"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- 以 marked 將報告的 Markdown 轉成 HTML;若載入失敗則退回純文字顯示。 -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script>
+  const RUN_ID = {{ run_id | tojson }};
+  const stepsEl = document.getElementById('steps');
+  const seen = new Set(); // 已渲染的步數,避免重複插入。
+
+  function esc(s) {
+    return (s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  }
+
+  function renderReport(result) {
+    if (!result || !result.report_markdown) return;
+    const panel = document.getElementById('report-panel');
+    const el = document.getElementById('report');
+    if (window.marked) {
+      el.innerHTML = marked.parse(result.report_markdown);
+    } else {
+      const pre = document.createElement('pre');
+      pre.textContent = result.report_markdown;
+      el.innerHTML = '';
+      el.appendChild(pre);
+    }
+    panel.style.display = 'block';
+  }
+
+  function renderStep(s) {
+    if (seen.has(s.step)) return;
+    seen.add(s.step);
+    const div = document.createElement('div');
+    div.className = 'step';
+    const inputStr = s.action_input && Object.keys(s.action_input).length
+      ? ' · <code>' + esc(JSON.stringify(s.action_input)) + '</code>' : '';
+    const shot = s.screenshot
+      ? `<div class="shot"><a href="/artifacts/${RUN_ID}/screenshots/${s.screenshot}" target="_blank">
+           <img loading="lazy" src="/artifacts/${RUN_ID}/screenshots/${s.screenshot}"></a></div>` : '';
+    div.innerHTML =
+      `<h4>步驟 ${s.step} · <span style="color:var(--accent)">${esc(s.action)}</span>${inputStr}</h4>` +
+      (s.thought ? `<div class="small muted" style="margin-bottom:6px">💭 ${esc(s.thought)}</div>` : '') +
+      `<pre class="obs">${esc(s.observation)}</pre>` + shot;
+    stepsEl.appendChild(div);
+  }
+
+  async function poll() {
+    let state;
+    try {
+      const res = await fetch(`/api/runs/${RUN_ID}`);
+      state = await res.json();
+    } catch (e) { setTimeout(poll, 2500); return; }
+
+    document.getElementById('goal').textContent = '🎯 ' + (state.goal || '');
+    document.getElementById('meta').textContent =
+      `模型 ${state.model || '-'} · 起始 ${state.start_url || '-'} · ` +
+      `開始 ${(state.started_at || '').slice(0, 19)}` +
+      (state.finished_at ? ` · 結束 ${state.finished_at.slice(0, 19)}` : '');
+
+    const badge = document.getElementById('status-badge');
+    badge.className = 'badge ' + state.status;
+    badge.textContent = { running: '執行中', succeeded: '成功', failed: '失敗' }[state.status] || state.status;
+
+    (state.steps || []).forEach(renderStep);
+    document.getElementById('step-count').textContent =
+      `(${(state.steps || []).length} 步)`;
+
+    if (state.error) {
+      badge.title = state.error;
+    }
+    if (state.result) renderReport(state.result);
+
+    if (state.status === 'running') {
+      setTimeout(poll, 2500); // 仍在執行 → 持續輪詢更新進度。
+    }
+  }
+  poll();
+</script>
+{% endblock %}

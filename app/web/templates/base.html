@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Browser Automation Agent{% endblock %}</title>
+  <style>
+    /* 整體版面與配色:簡潔、深色標題、易讀內文。 */
+    :root {
+      --bg: #0f1115; --panel: #1a1d24; --panel2: #20242d;
+      --text: #e6e8ec; --muted: #9aa3b2; --accent: #5b9dff;
+      --ok: #3fb950; --fail: #f85149; --run: #d29922; --border: #2a2f3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", system-ui, sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header.site {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; gap: 12px;
+    }
+    header.site h1 { font-size: 18px; margin: 0; }
+    header.site .sub { color: var(--muted); font-size: 13px; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px; margin-bottom: 18px;
+    }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+    textarea, input[type=text] {
+      width: 100%; background: var(--panel2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+      font-size: 14px; font-family: inherit;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    button, .btn {
+      background: var(--accent); color: #fff; border: none; cursor: pointer;
+      padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    }
+    button:hover { filter: brightness(1.08); }
+    .preset {
+      background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+      font-weight: 500; margin: 4px 6px 4px 0;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .badge.running { background: rgba(210,153,34,.18); color: var(--run); }
+    .badge.succeeded { background: rgba(63,185,80,.18); color: var(--ok); }
+    .badge.failed { background: rgba(248,81,73,.18); color: var(--fail); }
+    .muted { color: var(--muted); }
+    .error { background: rgba(248,81,73,.12); border: 1px solid var(--fail); color: #ffb4af;
+             padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; }
+    code, pre { font-family: "SFMono-Regular", Consolas, monospace; }
+    pre.obs { background: var(--panel2); padding: 10px; border-radius: 8px;
+              white-space: pre-wrap; word-break: break-word; font-size: 12.5px; color: var(--muted);
+              max-height: 220px; overflow: auto; }
+    .step { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; background: var(--panel); }
+    .step h4 { margin: 0 0 6px; font-size: 14px; }
+    .step .shot img { max-width: 100%; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
+    .report { background: var(--panel2); padding: 18px 22px; border-radius: 10px; }
+    .report h1, .report h2, .report h3 { border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .report img { max-width: 100%; }
+    .toolbar a { margin-right: 14px; font-size: 13px; }
+    .small { font-size: 12.5px; }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <h1><a href="/" style="color:var(--text)">Browser Automation Agent</a></h1>
+    <span class="sub">由 Claude 驅動的瀏覽器自動化代理</span>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
