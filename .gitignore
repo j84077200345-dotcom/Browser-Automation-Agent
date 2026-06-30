@@ -1,0 +1,33 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- 虛擬環境(絕對不要把 venv 提交進版控) ---
+browser_auto_env/
+.venv/
+venv/
+env/
+
+# --- 機密 / 本地設定 ---
+.env
+.env.local
+*.pem
+
+# --- 執行期產物(每次 run 產生的記錄、截圖、報告) ---
+# 忽略目錄內容,但保留 .gitkeep 讓空目錄能進版控。
+app/runs/*
+!app/runs/.gitkeep
+
+# --- Playwright ---
+/playwright-report/
+/test-results/
+
+# --- 作業系統 / 編輯器 ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

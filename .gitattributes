@@ -1,0 +1,7 @@
+# 統一文字檔案以 LF 結尾,避免 Windows 開發、Linux(Docker)部署之間的換行差異。
+* text=auto eol=lf
+
+# 二進位檔案不做換行轉換。
+*.png binary
+*.jpg binary
+*.ico binary
