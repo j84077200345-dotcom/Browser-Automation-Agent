@@ -19,8 +19,10 @@ from .tasks import PRESET_TASKS, get_preset
 async def _run(goal: str, url: str) -> None:
     settings = get_settings()
     if not settings.has_api_key:
-        print("錯誤:未設定 ANTHROPIC_API_KEY(請於 .env 或環境變數提供)。")
+        key_name = "OPENAI_API_KEY" if settings.llm_provider == "openai" else "ANTHROPIC_API_KEY"
+        print(f"錯誤:未設定 {key_name}(請於 .env 或環境變數提供)。")
         return
+    print(f"供應商:{settings.llm_provider} / 模型:{settings.agent_model}")
 
     logger = RunLogger(settings.runs_dir, goal, url, settings.agent_model)
     print(f"▶ 開始 run {logger.run_id}\n  目標:{goal}\n  起點:{url}")

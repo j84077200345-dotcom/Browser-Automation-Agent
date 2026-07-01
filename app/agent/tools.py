@@ -1,8 +1,9 @@
-"""Claude tool-use 的工具定義與分派。
+"""工具定義與分派(供應商無關)。
 
 此模組做兩件事:
-1. TOOL_SCHEMAS:提供給 Anthropic API 的工具規格(名稱、說明、參數 schema)。
-2. dispatch():把 Claude 選用的工具與參數,轉成對 BrowserController 的實際呼叫,
+1. TOOL_DEFS:以中立格式描述工具(名稱、說明、參數 JSON Schema);
+   各家 LLM 供應商的 adapter(見 llm.py)再轉成 Anthropic / OpenAI 各自的格式。
+2. dispatch():把 LLM 選用的工具與參數,轉成對 BrowserController 的實際呼叫,
    並回傳「執行結果觀察字串、是否為結束動作、最終結果(若 finish)」。
 """
 from __future__ import annotations
@@ -12,11 +13,11 @@ from typing import Any
 from .browser import BrowserController
 
 # 提供給 Claude 的工具清單。input_schema 採用 JSON Schema。
-TOOL_SCHEMAS: list[dict[str, Any]] = [
+TOOL_DEFS: list[dict[str, Any]] = [
     {
         "name": "navigate",
         "description": "前往指定的 URL。",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "url": {"type": "string", "description": "要開啟的完整網址。"}
@@ -27,7 +28,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "click",
         "description": "點擊觀察清單中指定編號的互動元素。",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "index": {"type": "integer", "description": "互動元素的編號。"}
@@ -38,7 +39,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "type_text",
         "description": "在指定編號的輸入框中填入文字;submit 為 true 時填入後按下 Enter。",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "index": {"type": "integer", "description": "輸入框元素的編號。"},
@@ -55,7 +56,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "scroll",
         "description": "向上或向下捲動一個視窗高度,以顯示更多內容。",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "direction": {
@@ -70,17 +71,17 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "read_page",
         "description": "讀取目前頁面較完整的可見文字(供擷取較長內容時使用)。",
-        "input_schema": {"type": "object", "properties": {}},
+        "parameters": {"type": "object", "properties": {}},
     },
     {
         "name": "go_back",
         "description": "回到瀏覽器的上一頁。",
-        "input_schema": {"type": "object", "properties": {}},
+        "parameters": {"type": "object", "properties": {}},
     },
     {
         "name": "finish",
         "description": "目標完成時呼叫,回報最終結果與交付產物。",
-        "input_schema": {
+        "parameters": {
             "type": "object",
             "properties": {
                 "summary": {

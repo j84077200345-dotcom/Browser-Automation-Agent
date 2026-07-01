@@ -2,6 +2,7 @@
 # (與本機 browser_auto_env 內安裝的版本一致;Playwright 版本須與 Dockerfile 的 base image 對應。)
 playwright==1.61.0
 anthropic==0.113.0
+openai==2.44.0
 fastapi==0.138.2
 uvicorn[standard]==0.49.0
 jinja2==3.1.6

@@ -1,8 +1,11 @@
 # Browser Automation Agent(瀏覽器自動化代理)
 
-一個由 **Claude** 驅動的瀏覽器自動化代理:給它一個**自然語言目標**與**起始 URL**,
+一個由 **LLM** 驅動的瀏覽器自動化代理:給它一個**自然語言目標**與**起始 URL**,
 它會以 **Playwright(headless Chromium)** 一步一步操作真實瀏覽器,直到完成目標,
 並產出**可驗證的產物**——結構化報告、擷取資料、每一步截圖,以及完整執行記錄。
+
+> **供應商不寫死**:以 `LLM_PROVIDER` 環境變數在 **Anthropic(Claude)** 與
+> **OpenAI(GPT)** 之間切換,你手上有哪家的 key 就用哪家(見 [`app/agent/llm.py`](app/agent/llm.py))。
 
 > 範例目標:「在 Hacker News 找出排名第 1 的頭條,開啟其留言頁,並摘要討論氛圍。」
 
@@ -26,10 +29,10 @@
 │                                               │
 │  1. 擷取頁面狀態(browser.py)                  │
 │     → URL、標題、可見文字、「帶編號的互動元素」  │
-│  2. 交給 Claude 決定下一步(tool-use)          │
+│  2. 交給 LLM 決定下一步(tool / function call)  │
 │     → navigate / click / type_text / scroll / │
 │       read_page / go_back / finish            │
-│  3. 執行動作 → 截圖 → 回傳新觀察給 Claude       │
+│  3. 執行動作 → 截圖 → 回傳新觀察給 LLM          │
 │  4. 重複,直到 finish 或達步數上限              │
 └─────────────────────────────────────────────┘
         │
@@ -39,8 +42,8 @@
 
 **可靠性關鍵——以「元素編號」取代脆弱的 selector:**
 每次擷取頁面時,會用一段 JavaScript 掃描所有*可見的*互動元素,在每個元素上標記
-`data-agent-id`(從 0 開始編號)並回傳清單。Claude 只需說「點擊 [3]」而非提供 CSS
-selector,因此對網站改版、動態 class 名稱具有韌性。這也讓 Claude 看到的是精簡的
+`data-agent-id`(從 0 開始編號)並回傳清單。LLM 只需說「點擊 [3]」而非提供 CSS
+selector,因此對網站改版、動態 class 名稱具有韌性。這也讓模型看到的是精簡的
 accessibility 視圖,而非整份 HTML,節省 token 並提升判斷品質。
 
 ### 專案結構
@@ -53,8 +56,9 @@ app/
 ├─ cli.py             命令列執行入口(本機驗證用)
 ├─ agent/
 │  ├─ browser.py      Playwright 封裝 + 帶編號互動元素快照
-│  ├─ agent.py        Claude tool-use 主迴圈
-│  ├─ tools.py        工具定義與分派
+│  ├─ agent.py        供應商無關的 agent 主迴圈
+│  ├─ llm.py          LLM 供應商抽象層(Anthropic / OpenAI 可切換)
+│  ├─ tools.py        工具定義(中立格式)與分派
 │  ├─ prompts.py      系統提示
 │  └─ logger.py       執行記錄與產物
 └─ web/
@@ -78,9 +82,10 @@ tests/                單元測試 + 離線瀏覽器整合測試
 pip install -r requirements.txt
 python -m playwright install chromium
 
-# 3. 設定金鑰:複製 .env.example 為 .env,填入 ANTHROPIC_API_KEY
+# 3. 設定供應商與金鑰:複製 .env.example 為 .env
 copy .env.example .env
-#    然後編輯 .env
+#    然後編輯 .env:設定 LLM_PROVIDER=anthropic(或 openai),
+#    並填入對應的 ANTHROPIC_API_KEY 或 OPENAI_API_KEY
 
 # 4a. 啟動 Web 介面
 uvicorn app.web.server:app --reload
@@ -117,7 +122,8 @@ python -m app.cli --preset hn_top_story
 `mcr.microsoft.com/playwright/python`(已內建瀏覽器與系統相依)。
 
 1. 將此 repo 連結到 Zeabur(或任何支援 Dockerfile 的平台)。
-2. 在平台的環境變數設定中加入機密 **`ANTHROPIC_API_KEY`**(切勿寫進程式碼)。
+2. 在平台的環境變數設定中加入機密:`LLM_PROVIDER`(`anthropic` 或 `openai`)與對應的
+   **`ANTHROPIC_API_KEY`** 或 **`OPENAI_API_KEY`**(切勿寫進程式碼)。
 3. 平台會自動以 `$PORT` 注入埠號,容器啟動 `uvicorn app.web.server:app`。
 4. 其他可調環境變數見 [`.env.example`](.env.example):`AGENT_MODEL`、
    `AGENT_MAX_STEPS`、`DAILY_RUN_LIMIT` 等。
@@ -147,5 +153,5 @@ python -m app.cli --preset hn_top_story
 
 ## 無機密資料
 
-本專案僅使用公開網站與自建程式碼。`ANTHROPIC_API_KEY` 僅透過環境變數 / 平台機密注入,
-**絕不**寫入版控(`.gitignore` 已排除 `.env`)。
+本專案僅使用公開網站與自建程式碼。API key(`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`)
+僅透過環境變數 / 平台機密注入,**絕不**寫入版控(`.gitignore` 已排除 `.env`)。

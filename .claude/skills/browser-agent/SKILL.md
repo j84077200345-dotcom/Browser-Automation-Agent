@@ -16,7 +16,8 @@ description: 執行一個瀏覽器自動化目標——以本專案中由 Claude
 
 ## 如何執行
 
-先確認已啟用虛擬環境 `browser_auto_env`,且環境變數有 `ANTHROPIC_API_KEY`。
+先確認已啟用虛擬環境 `browser_auto_env`,並依 `LLM_PROVIDER` 設定對應的 API key
+(`ANTHROPIC_API_KEY` 或 `OPENAI_API_KEY`)。
 
 **用預設任務(最快驗證):**
 ```bash

@@ -37,6 +37,8 @@ class RunManager:
             "busy": self._current_run_id is not None,
             "current_run_id": self._current_run_id,
             "has_api_key": self._settings.has_api_key,
+            "provider": self._settings.llm_provider,
+            "model": self._settings.agent_model,
             "daily_limit": self._settings.daily_run_limit,
             "daily_used": self._daily_count if self._is_today() else 0,
         }

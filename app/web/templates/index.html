@@ -8,9 +8,10 @@
     {% if status.has_api_key %}
       伺服器狀態:
       {% if status.busy %}<span class="badge running">執行中</span>(run {{ status.current_run_id }}){% else %}<span class="badge succeeded">閒置</span>{% endif %}
+      · 供應商 <b>{{ status.provider }}</b> / 模型 <b>{{ status.model }}</b>
       {% if status.daily_limit > 0 %}· 今日已用 {{ status.daily_used }}/{{ status.daily_limit }} 次{% endif %}
     {% else %}
-      <span class="badge failed">未設定 API key</span> 伺服器尚未設定 ANTHROPIC_API_KEY,無法觸發新的 run(仍可瀏覽既有結果)。
+      <span class="badge failed">未設定 API key</span> 伺服器尚未設定 {{ status.provider }} 的 API key,無法觸發新的 run(仍可瀏覽既有結果)。
     {% endif %}
   </div>
 </div>
