@@ -23,7 +23,7 @@
   <div class="row" style="margin-bottom:8px">
     {% for p in presets %}
       <button type="button" class="preset"
-        onclick="fillPreset({{ p.goal | tojson }}, {{ p.start_url | tojson }})">{{ p.title }}</button>
+        data-goal="{{ p.goal }}" data-url="{{ p.start_url }}">{{ p.title }}</button>
     {% endfor %}
   </div>
 
@@ -63,11 +63,14 @@
 
 {% block scripts %}
 <script>
-  // 點選預設任務時,將目標與起始 URL 帶入表單欄位。
-  function fillPreset(goal, url) {
-    document.getElementById('goal').value = goal;
-    document.getElementById('start_url').value = url;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  // 點選預設任務時,把 data-* 屬性上的目標與起始 URL 帶入表單欄位。
+  // 用 addEventListener 而非 inline onclick,避免含引號的字串破壞 HTML 屬性。
+  document.querySelectorAll('.preset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.getElementById('goal').value = btn.dataset.goal;
+      document.getElementById('start_url').value = btn.dataset.url;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
 </script>
 {% endblock %}
