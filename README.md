@@ -13,8 +13,11 @@
 
 ## 線上 Demo
 
-- 公開網址:**`<部署後填入,例如 https://your-app.zeabur.app>`**
-- 進入後可直接點選預設任務一鍵觸發,或輸入自訂目標。執行過程與結果即時顯示。
+- 公開網址:**https://browser-automation-agent.zeabur.app/**(部署於 Zeabur,供應商 OpenAI / gpt-4o)
+- 健康檢查:[`/healthz`](https://browser-automation-agent.zeabur.app/healthz)
+- 進入後首頁「歷史 run」即可看到內建的示範 run(可驗證的報告、資料與截圖);
+  也可直接點選預設任務一鍵帶入,或輸入自訂目標觸發,執行過程與結果會即時顯示。
+- 公開 URL 設有每日觸發上限(`DAILY_RUN_LIMIT`)以保護 API 額度。
 
 ---
 
