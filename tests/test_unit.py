@@ -3,9 +3,12 @@ from __future__ import annotations
 
 import json
 
+import dataclasses
+
 from app.agent.logger import RunLogger, new_run_id
 from app.agent.tools import dispatch
-from app.config import _as_bool, _as_int
+from app.config import _as_bool, _as_int, get_settings
+from app.runner import RunManager
 from app.tasks import PRESET_TASKS, get_preset
 
 
@@ -78,3 +81,18 @@ async def test_dispatch_unknown_tool():
     assert is_finish is False
     assert result is None
     assert "未知的工具" in obs
+
+
+def test_runmanager_seeds_samples(tmp_path):
+    """RunManager 初始化時應把 samples_dir 內的示範 run 複製進(空的)runs_dir。"""
+    empty_runs = tmp_path / "runs"
+    settings = dataclasses.replace(get_settings(), runs_dir=empty_runs)
+    # 使用專案內真實的 samples_dir(含已提交的示範 run)。
+    assert settings.samples_dir.exists()
+
+    manager = RunManager(settings)
+    seeded = manager.list_runs()
+    assert len(seeded) >= 1
+    # 植入後應可查得該筆 run 且產物存在。
+    run_id = seeded[0]["run_id"]
+    assert (empty_runs / run_id / "run.json").exists()

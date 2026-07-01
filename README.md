@@ -100,6 +100,10 @@ python -m app.cli --preset hn_top_story
 
 ## 如何驗證
 
+> 本專案已內建一次**真實執行的示範 run**(`app/samples/`,以 OpenAI gpt-4o 擷取
+> quotes.toscrape.com「humor」標籤的 12 則名言),啟動時會自動植入 `runs/`,因此
+> 公開 URL 或本機一載入即可在「歷史 run」看到可驗證的報告、資料與截圖。
+
 1. **執行一次 run**:在儀表板點選預設任務(如「Hacker News:頭條 + 留言摘要」)→
    觀看步驟即時更新、每步截圖,以及最終 Markdown 報告。
 2. **檢視可驗證產物**(每次 run 一個資料夾 `app/runs/<run_id>/`,並透過 `/artifacts/...` 提供):

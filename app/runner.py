@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,26 @@ class RunManager:
         self._current_run_id: str | None = None
         self._daily_date: str | None = None
         self._daily_count: int = 0
+        self._seed_samples()
+
+    def _seed_samples(self) -> None:
+        """把隨程式碼打包的示範 run 植入 runs_dir(尚未存在時才複製)。
+
+        這樣即使在 Zeabur 這類重新部署會清空檔案系統的平台上,公開 URL 一載入就有
+        可驗證的示範產物可看,不必先觸發 API 呼叫。
+        """
+        samples = self._settings.samples_dir
+        if not samples.exists():
+            return
+        for sample in samples.iterdir():
+            if not sample.is_dir():
+                continue
+            target = self._settings.runs_dir / sample.name
+            if not target.exists():
+                try:
+                    shutil.copytree(sample, target)
+                except OSError:
+                    continue
 
     # --- 觸發 run ---
 

@@ -19,6 +19,8 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RUNS_DIR = BASE_DIR / "app" / "runs"
+# 隨程式碼一起打包的示範 run(啟動時會植入 runs_dir),讓公開 URL 一載入就有可驗證產物。
+SAMPLES_DIR = BASE_DIR / "app" / "samples"
 
 # 各供應商在未指定 AGENT_MODEL 時採用的預設模型。
 _DEFAULT_MODELS = {
@@ -55,6 +57,7 @@ class Settings:
     port: int
     daily_run_limit: int
     runs_dir: Path
+    samples_dir: Path
 
     @property
     def active_api_key(self) -> str:
@@ -91,4 +94,5 @@ def get_settings() -> Settings:
         port=_as_int(os.environ.get("PORT"), 8000),
         daily_run_limit=_as_int(os.environ.get("DAILY_RUN_LIMIT"), 50),
         runs_dir=RUNS_DIR,
+        samples_dir=SAMPLES_DIR,
     )
