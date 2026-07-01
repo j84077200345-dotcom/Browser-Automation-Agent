@@ -19,5 +19,6 @@ ENV HEADLESS=true \
 
 EXPOSE 8000
 
-# 以 shell 形式啟動,讓 ${PORT} 能被部署平台注入的值取代。
-CMD uvicorn app.web.server:app --host 0.0.0.0 --port ${PORT:-8000}
+# 以 shell 形式啟動,讓 ${PORT} 能被部署平台注入的值取代;
+# 用 python -m uvicorn 以避免 console script 不在 PATH 的問題。
+CMD python -m uvicorn app.web.server:app --host 0.0.0.0 --port ${PORT:-8000}
